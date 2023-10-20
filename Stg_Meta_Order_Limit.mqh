@@ -1,72 +1,72 @@
 /**
  * @file
- * Implements Multi Currency meta strategy.
+ * Implements Order Limit meta strategy.
  */
 
 // Prevents processing this includes file multiple times.
-#ifndef STG_META_MULTI_CURRENCY_MQH
-#define STG_META_MULTI_CURRENCY_MQH
+#ifndef STG_META_ORDER_LIMIT_MQH
+#define STG_META_ORDER_LIMIT_MQH
 
 // User input params.
-INPUT2_GROUP("Meta Multi Currency strategy: main params");
-INPUT2 ENUM_STRATEGY Meta_Multi_Strategy_Symbol1 = STRAT_NONE;  // Strategy for symbol 1
-INPUT2 ENUM_STRATEGY Meta_Multi_Strategy_Symbol2 = STRAT_NONE;  // Strategy for symbol 2
-INPUT2 ENUM_STRATEGY Meta_Multi_Strategy_Symbol3 = STRAT_NONE;  // Strategy for symbol 3
-INPUT2 ENUM_STRATEGY Meta_Multi_Strategy_Symbol4 = STRAT_NONE;  // Strategy for symbol 4
-INPUT2_GROUP("Meta Multi Currency strategy: common params");
-INPUT2 float Meta_Multi_Currency_LotSize = 0;                // Lot size
-INPUT2 int Meta_Multi_Currency_SignalOpenMethod = 0;         // Signal open method
-INPUT2 float Meta_Multi_Currency_SignalOpenLevel = 0;        // Signal open level
-INPUT2 int Meta_Multi_Currency_SignalOpenFilterMethod = 32;  // Signal open filter method
-INPUT2 int Meta_Multi_Currency_SignalOpenFilterTime = 3;     // Signal open filter time (0-31)
-INPUT2 int Meta_Multi_Currency_SignalOpenBoostMethod = 0;    // Signal open boost method
-INPUT2 int Meta_Multi_Currency_SignalCloseMethod = 0;        // Signal close method
-INPUT2 int Meta_Multi_Currency_SignalCloseFilter = 32;       // Signal close filter (-127-127)
-INPUT2 float Meta_Multi_Currency_SignalCloseLevel = 0;       // Signal close level
-INPUT2 int Meta_Multi_Currency_PriceStopMethod = 0;          // Price limit method
-INPUT2 float Meta_Multi_Currency_PriceStopLevel = 2;         // Price limit level
-INPUT2 int Meta_Multi_Currency_TickFilterMethod = 32;        // Tick filter method (0-255)
-INPUT2 float Meta_Multi_Currency_MaxSpread = 4.0;            // Max spread to trade (in pips)
-INPUT2 short Meta_Multi_Currency_Shift = 0;                  // Shift
-INPUT2 float Meta_Multi_Currency_OrderCloseLoss = 200;       // Order close loss
-INPUT2 float Meta_Multi_Currency_OrderCloseProfit = 200;     // Order close profit
-INPUT2 int Meta_Multi_Currency_OrderCloseTime = 2880;        // Order close time in mins (>0) or bars (<0)
+INPUT2_GROUP("Meta Order Limit strategy: main params");
+INPUT2 ENUM_STRATEGY Meta_Order_Limit_Strategy_Symbol1 = STRAT_NONE;  // Strategy for symbol 1
+INPUT2 ENUM_STRATEGY Meta_Order_Limit_Strategy_Symbol2 = STRAT_NONE;  // Strategy for symbol 2
+INPUT2 ENUM_STRATEGY Meta_Order_Limit_Strategy_Symbol3 = STRAT_NONE;  // Strategy for symbol 3
+INPUT2 ENUM_STRATEGY Meta_Order_Limit_Strategy_Symbol4 = STRAT_NONE;  // Strategy for symbol 4
+INPUT2_GROUP("Meta Order Limit strategy: common params");
+INPUT2 float Meta_Order_Limit_LotSize = 0;                // Lot size
+INPUT2 int Meta_Order_Limit_SignalOpenMethod = 0;         // Signal open method
+INPUT2 float Meta_Order_Limit_SignalOpenLevel = 0;        // Signal open level
+INPUT2 int Meta_Order_Limit_SignalOpenFilterMethod = 32;  // Signal open filter method
+INPUT2 int Meta_Order_Limit_SignalOpenFilterTime = 3;     // Signal open filter time (0-31)
+INPUT2 int Meta_Order_Limit_SignalOpenBoostMethod = 0;    // Signal open boost method
+INPUT2 int Meta_Order_Limit_SignalCloseMethod = 0;        // Signal close method
+INPUT2 int Meta_Order_Limit_SignalCloseFilter = 32;       // Signal close filter (-127-127)
+INPUT2 float Meta_Order_Limit_SignalCloseLevel = 0;       // Signal close level
+INPUT2 int Meta_Order_Limit_PriceStopMethod = 0;          // Price limit method
+INPUT2 float Meta_Order_Limit_PriceStopLevel = 2;         // Price limit level
+INPUT2 int Meta_Order_Limit_TickFilterMethod = 32;        // Tick filter method (0-255)
+INPUT2 float Meta_Order_Limit_MaxSpread = 4.0;            // Max spread to trade (in pips)
+INPUT2 short Meta_Order_Limit_Shift = 0;                  // Shift
+INPUT2 float Meta_Order_Limit_OrderCloseLoss = 200;       // Order close loss
+INPUT2 float Meta_Order_Limit_OrderCloseProfit = 200;     // Order close profit
+INPUT2 int Meta_Order_Limit_OrderCloseTime = 2880;        // Order close time in mins (>0) or bars (<0)
 
 // Structs.
 // Defines struct with default user strategy values.
-struct Stg_Meta_Multi_Currency_Params_Defaults : StgParams {
-  Stg_Meta_Multi_Currency_Params_Defaults()
-      : StgParams(::Meta_Multi_Currency_SignalOpenMethod, ::Meta_Multi_Currency_SignalOpenFilterMethod,
-                  ::Meta_Multi_Currency_SignalOpenLevel, ::Meta_Multi_Currency_SignalOpenBoostMethod,
-                  ::Meta_Multi_Currency_SignalCloseMethod, ::Meta_Multi_Currency_SignalCloseFilter,
-                  ::Meta_Multi_Currency_SignalCloseLevel, ::Meta_Multi_Currency_PriceStopMethod,
-                  ::Meta_Multi_Currency_PriceStopLevel, ::Meta_Multi_Currency_TickFilterMethod,
-                  ::Meta_Multi_Currency_MaxSpread, ::Meta_Multi_Currency_Shift) {
-    Set(STRAT_PARAM_LS, ::Meta_Multi_Currency_LotSize);
-    Set(STRAT_PARAM_OCL, ::Meta_Multi_Currency_OrderCloseLoss);
-    Set(STRAT_PARAM_OCP, ::Meta_Multi_Currency_OrderCloseProfit);
-    Set(STRAT_PARAM_OCT, ::Meta_Multi_Currency_OrderCloseTime);
-    Set(STRAT_PARAM_SOFT, ::Meta_Multi_Currency_SignalOpenFilterTime);
+struct Stg_Meta_Order_Limit_Params_Defaults : StgParams {
+  Stg_Meta_Order_Limit_Params_Defaults()
+      : StgParams(::Meta_Order_Limit_SignalOpenMethod, ::Meta_Order_Limit_SignalOpenFilterMethod,
+                  ::Meta_Order_Limit_SignalOpenLevel, ::Meta_Order_Limit_SignalOpenBoostMethod,
+                  ::Meta_Order_Limit_SignalCloseMethod, ::Meta_Order_Limit_SignalCloseFilter,
+                  ::Meta_Order_Limit_SignalCloseLevel, ::Meta_Order_Limit_PriceStopMethod,
+                  ::Meta_Order_Limit_PriceStopLevel, ::Meta_Order_Limit_TickFilterMethod, ::Meta_Order_Limit_MaxSpread,
+                  ::Meta_Order_Limit_Shift) {
+    Set(STRAT_PARAM_LS, ::Meta_Order_Limit_LotSize);
+    Set(STRAT_PARAM_OCL, ::Meta_Order_Limit_OrderCloseLoss);
+    Set(STRAT_PARAM_OCP, ::Meta_Order_Limit_OrderCloseProfit);
+    Set(STRAT_PARAM_OCT, ::Meta_Order_Limit_OrderCloseTime);
+    Set(STRAT_PARAM_SOFT, ::Meta_Order_Limit_SignalOpenFilterTime);
   }
 };
 
-class Stg_Meta_Multi_Currency : public Strategy {
+class Stg_Meta_Order_Limit : public Strategy {
  protected:
   DictStruct<long, Ref<Strategy>> strats;
   Trade strade;
 
  public:
-  Stg_Meta_Multi_Currency(StgParams &_sparams, TradeParams &_tparams, ChartParams &_cparams, string _name = "")
+  Stg_Meta_Order_Limit(StgParams &_sparams, TradeParams &_tparams, ChartParams &_cparams, string _name = "")
       : Strategy(_sparams, _tparams, _cparams, _name), strade(_tparams, _cparams) {}
 
-  static Stg_Meta_Multi_Currency *Init(ENUM_TIMEFRAMES _tf = NULL, EA *_ea = NULL) {
+  static Stg_Meta_Order_Limit *Init(ENUM_TIMEFRAMES _tf = NULL, EA *_ea = NULL) {
     // Initialize strategy initial values.
-    Stg_Meta_Multi_Currency_Params_Defaults stg_meta_multi_currency_defaults;
-    StgParams _stg_params(stg_meta_multi_currency_defaults);
+    Stg_Meta_Order_Limit_Params_Defaults stg_meta_order_limit_defaults;
+    StgParams _stg_params(stg_meta_order_limit_defaults);
     // Initialize Strategy instance.
     ChartParams _cparams(_tf, _Symbol);
     TradeParams _tparams;
-    Strategy *_strat = new Stg_Meta_Multi_Currency(_stg_params, _tparams, _cparams, "(Meta) Multi Currency");
+    Strategy *_strat = new Stg_Meta_Order_Limit(_stg_params, _tparams, _cparams, "(Meta) Order Limit");
     return _strat;
   }
 
@@ -75,10 +75,10 @@ class Stg_Meta_Multi_Currency : public Strategy {
    */
   void OnInit() {
     // Initialize strategies.
-    StrategyAdd(Meta_Multi_Strategy_Symbol1, 1);
-    StrategyAdd(Meta_Multi_Strategy_Symbol2, 2);
-    StrategyAdd(Meta_Multi_Strategy_Symbol3, 3);
-    StrategyAdd(Meta_Multi_Strategy_Symbol4, 4);
+    StrategyAdd(Meta_Order_Limit_Strategy_Symbol1, 1);
+    StrategyAdd(Meta_Order_Limit_Strategy_Symbol2, 2);
+    StrategyAdd(Meta_Order_Limit_Strategy_Symbol3, 3);
+    StrategyAdd(Meta_Order_Limit_Strategy_Symbol4, 4);
     // Assigns strategies to different symbols.
     Ref<Strategy> _strat_ref1 = strats.GetByKey(1);
     if (_strat_ref1.IsSet()) {
@@ -454,4 +454,4 @@ class Stg_Meta_Multi_Currency : public Strategy {
   }
 };
 
-#endif  // STG_META_MULTI_CURRENCY_MQH
+#endif  // STG_META_ORDER_LIMIT_MQH

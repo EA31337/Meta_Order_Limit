@@ -6,7 +6,7 @@
 
 /**
  * @file
- * Implements Multi Currency meta strategy.
+ * Implements Order Limit meta strategy.
  */
 
 // Includes the main code.
