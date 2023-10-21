@@ -9,10 +9,7 @@
 
 // User input params.
 INPUT2_GROUP("Meta Order Limit strategy: main params");
-INPUT2 ENUM_STRATEGY Meta_Order_Limit_Strategy_Symbol1 = STRAT_NONE;  // Strategy for symbol 1
-INPUT2 ENUM_STRATEGY Meta_Order_Limit_Strategy_Symbol2 = STRAT_NONE;  // Strategy for symbol 2
-INPUT2 ENUM_STRATEGY Meta_Order_Limit_Strategy_Symbol3 = STRAT_NONE;  // Strategy for symbol 3
-INPUT2 ENUM_STRATEGY Meta_Order_Limit_Strategy_Symbol4 = STRAT_NONE;  // Strategy for symbol 4
+INPUT2 ENUM_STRATEGY Meta_Order_Limit_Strategy = STRAT_DEMARKER;  // Strategy for order limits
 INPUT2_GROUP("Meta Order Limit strategy: common params");
 INPUT2 float Meta_Order_Limit_LotSize = 0;                // Lot size
 INPUT2 int Meta_Order_Limit_SignalOpenMethod = 0;         // Signal open method
@@ -23,14 +20,14 @@ INPUT2 int Meta_Order_Limit_SignalOpenBoostMethod = 0;    // Signal open boost m
 INPUT2 int Meta_Order_Limit_SignalCloseMethod = 0;        // Signal close method
 INPUT2 int Meta_Order_Limit_SignalCloseFilter = 32;       // Signal close filter (-127-127)
 INPUT2 float Meta_Order_Limit_SignalCloseLevel = 0;       // Signal close level
-INPUT2 int Meta_Order_Limit_PriceStopMethod = 0;          // Price limit method
+INPUT2 int Meta_Order_Limit_PriceStopMethod = 1;          // Price limit method
 INPUT2 float Meta_Order_Limit_PriceStopLevel = 2;         // Price limit level
 INPUT2 int Meta_Order_Limit_TickFilterMethod = 32;        // Tick filter method (0-255)
 INPUT2 float Meta_Order_Limit_MaxSpread = 4.0;            // Max spread to trade (in pips)
 INPUT2 short Meta_Order_Limit_Shift = 0;                  // Shift
 INPUT2 float Meta_Order_Limit_OrderCloseLoss = 200;       // Order close loss
 INPUT2 float Meta_Order_Limit_OrderCloseProfit = 200;     // Order close profit
-INPUT2 int Meta_Order_Limit_OrderCloseTime = 2880;        // Order close time in mins (>0) or bars (<0)
+INPUT2 int Meta_Order_Limit_OrderCloseTime = 1440;        // Order close time in mins (>0) or bars (<0)
 
 // Structs.
 // Defines struct with default user strategy values.
@@ -75,27 +72,7 @@ class Stg_Meta_Order_Limit : public Strategy {
    */
   void OnInit() {
     // Initialize strategies.
-    StrategyAdd(Meta_Order_Limit_Strategy_Symbol1, 1);
-    StrategyAdd(Meta_Order_Limit_Strategy_Symbol2, 2);
-    StrategyAdd(Meta_Order_Limit_Strategy_Symbol3, 3);
-    StrategyAdd(Meta_Order_Limit_Strategy_Symbol4, 4);
-    // Assigns strategies to different symbols.
-    Ref<Strategy> _strat_ref1 = strats.GetByKey(1);
-    if (_strat_ref1.IsSet()) {
-      // _strat_ref1.Ptr().Set<string>(CHART_PARAM_SYMBOL, _Symbol); // @fixme
-    }
-    Ref<Strategy> _strat_ref2 = strats.GetByKey(2);
-    if (_strat_ref2.IsSet()) {
-      // _strat_ref2.Ptr().Set<string>(CHART_PARAM_SYMBOL, _Symbol); // @fixme
-    }
-    Ref<Strategy> _strat_ref3 = strats.GetByKey(3);
-    if (_strat_ref3.IsSet()) {
-      // _strat_ref3.Ptr().Set<string>(CHART_PARAM_SYMBOL, _Symbol); // @fixme
-    }
-    Ref<Strategy> _strat_ref4 = strats.GetByKey(4);
-    if (_strat_ref4.IsSet()) {
-      // _strat_ref4.Ptr().Set<string>(CHART_PARAM_SYMBOL, _Symbol); // @fixme
-    }
+    StrategyAdd(Meta_Order_Limit_Strategy, 0);
   }
 
   /**
@@ -303,19 +280,6 @@ class Stg_Meta_Order_Limit : public Strategy {
   }
 
   /**
-   * Gets strategy.
-   */
-  /*
-  Ref<Strategy> GetStrategy(int _shift = 0) {
-    // IndicatorBase *_indi = GetIndicator();
-    uint _ishift = _shift + 1;  // + _indi.GetShift()?
-    Ref<Strategy> _strat_ref;
-    //_strat_ref = strats.GetByKey(0);
-    return _strat_ref;
-  }
-  */
-
-  /**
    * Gets symbol.
    */
   string GetSymbol(int _index) {
@@ -329,8 +293,10 @@ class Stg_Meta_Order_Limit : public Strategy {
    * @return
    *   Returns true on successful request.
    */
-  virtual bool TradeRequest(ENUM_ORDER_TYPE _cmd, string _symbol = NULL, Strategy *_strat = NULL, int _shift = 0) {
+  virtual bool TradeRequest(ENUM_ORDER_TYPE _cmd, Strategy *_strat = NULL, int _shift = 0) {
     bool _result = false;
+    double _offset =
+        strade.GetChart().GetPointSize() * 50;  // Offset from the current price to place the order in points.
     /*
     Ref<Strategy> _strat_ref = GetStrategy(_shift);
     if (!_strat_ref.IsSet()) {
@@ -340,12 +306,18 @@ class Stg_Meta_Order_Limit : public Strategy {
     */
     // Prepare a request.
     MqlTradeRequest _request = strade.GetTradeOpenRequest(_cmd);
-    _request.comment = /*_strat_ref.Ptr().*/ GetOrderOpenComment();
+    _request.action = TRADE_ACTION_PENDING;
+    switch (_cmd) {
+      case ORDER_TYPE_BUY:
+        _request.price -= _offset;
+        _request.type = ORDER_TYPE_BUY_LIMIT;
+        break;
+      case ORDER_TYPE_SELL:
+        _request.price += _offset;
+        _request.type = ORDER_TYPE_SELL_LIMIT;
+        break;
+    }
     _request.magic = /*_strat_ref.Ptr().*/ Get<long>(STRAT_PARAM_ID);
-    _request.price = SymbolInfoStatic::GetOpenOffer(_symbol, _cmd);
-    _request.symbol = _symbol;
-    _request.volume = fmax(/*_strat_ref.Ptr().*/ Get<float>(STRAT_PARAM_LS), SymbolInfoStatic::GetVolumeMin(_symbol));
-    _request.volume = strade.NormalizeLots(_request.volume);
     // Prepare an order parameters.
     OrderParams _oparams;
     /*_strat_ref.Ptr().*/ OnOrderOpen(_oparams);
@@ -373,7 +345,7 @@ class Stg_Meta_Order_Limit : public Strategy {
       // Ignores calculation when method is 0.
       return (float)_result;
     }
-    Ref<Strategy> _strat_ref = strats.GetByKey(1);  // @todo: Support for multi-currency.
+    Ref<Strategy> _strat_ref = strats.GetByKey(0);
     if (!_strat_ref.IsSet()) {
       // Returns false when strategy is not set.
       return false;
@@ -389,59 +361,22 @@ class Stg_Meta_Order_Limit : public Strategy {
    * Check strategy's opening signal.
    */
   bool SignalOpen(ENUM_ORDER_TYPE _cmd, int _method, float _level = 0.0f, int _shift = 0) {
-    bool _result = true, _result1 = false, _result2 = false, _result3 = false, _result4 = false;
+    bool _result = true, _result1 = false;
     // uint _ishift = _indi.GetShift();
     uint _ishift = _shift;
-    string _symbol = NULL;
-    // Process strategy 1.
-    Ref<Strategy> _strat_ref1 = strats.GetByKey(1);
-    if (_strat_ref1.IsSet()) {
-      _level = _level == 0.0f ? _strat_ref1.Ptr().Get<float>(STRAT_PARAM_SOL) : _level;
-      _method = _method == 0 ? _strat_ref1.Ptr().Get<int>(STRAT_PARAM_SOM) : _method;
-      _shift = _shift == 0 ? _strat_ref1.Ptr().Get<int>(STRAT_PARAM_SHIFT) : _shift;
-      _result1 = _strat_ref1.Ptr().SignalOpen(_cmd, _method, _level, _shift);
+    // Process strategy.
+    Ref<Strategy> _strat_ref = strats.GetByKey(0);
+    if (_strat_ref.IsSet()) {
+      _level = _level == 0.0f ? _strat_ref.Ptr().Get<float>(STRAT_PARAM_SOL) : _level;
+      _method = _method == 0 ? _strat_ref.Ptr().Get<int>(STRAT_PARAM_SOM) : _method;
+      _shift = _shift == 0 ? _strat_ref.Ptr().Get<int>(STRAT_PARAM_SHIFT) : _shift;
+      _result1 = _strat_ref.Ptr().SignalOpen(_cmd, _method, _level, _shift);
       if (_result1) {
-        _symbol = SymbolName(0, true);
-        TradeRequest(_cmd, _symbol, GetPointer(this), _shift);
+        // @todo: Move to OnOrderOpen().
+        TradeRequest(_cmd, GetPointer(this), _shift);
       }
     }
-    // Process strategy 2.
-    Ref<Strategy> _strat_ref2 = strats.GetByKey(2);
-    if (_strat_ref2.IsSet()) {
-      _level = _level == 0.0f ? _strat_ref2.Ptr().Get<float>(STRAT_PARAM_SOL) : _level;
-      _method = _method == 0 ? _strat_ref2.Ptr().Get<int>(STRAT_PARAM_SOM) : _method;
-      _shift = _shift == 0 ? _strat_ref2.Ptr().Get<int>(STRAT_PARAM_SHIFT) : _shift;
-      _result2 = _strat_ref2.Ptr().SignalOpen(_cmd, _method, _level, _shift);
-      if (_result2) {
-        _symbol = SymbolName(1, true);
-        TradeRequest(_cmd, _symbol, GetPointer(this), _shift);
-      }
-    }
-    // Process strategy 3.
-    Ref<Strategy> _strat_ref3 = strats.GetByKey(3);
-    if (_strat_ref3.IsSet()) {
-      _level = _level == 0.0f ? _strat_ref3.Ptr().Get<float>(STRAT_PARAM_SOL) : _level;
-      _method = _method == 0 ? _strat_ref3.Ptr().Get<int>(STRAT_PARAM_SOM) : _method;
-      _shift = _shift == 0 ? _strat_ref3.Ptr().Get<int>(STRAT_PARAM_SHIFT) : _shift;
-      _result3 = _strat_ref3.Ptr().SignalOpen(_cmd, _method, _level, _shift);
-      if (_result3) {
-        _symbol = SymbolName(2, true);
-        TradeRequest(_cmd, _symbol, GetPointer(this), _shift);
-      }
-    }
-    // Process strategy 4.
-    Ref<Strategy> _strat_ref4 = strats.GetByKey(4);
-    if (_strat_ref4.IsSet()) {
-      _level = _level == 0.0f ? _strat_ref4.Ptr().Get<float>(STRAT_PARAM_SOL) : _level;
-      _method = _method == 0 ? _strat_ref4.Ptr().Get<int>(STRAT_PARAM_SOM) : _method;
-      _shift = _shift == 0 ? _strat_ref4.Ptr().Get<int>(STRAT_PARAM_SHIFT) : _shift;
-      _result3 = _strat_ref4.Ptr().SignalOpen(_cmd, _method, _level, _shift);
-      if (_result4) {
-        _symbol = SymbolName(3, true);
-        TradeRequest(_cmd, _symbol, GetPointer(this), _shift);
-      }
-    }
-    return _result1 || _result2 || _result3 || _result4;
+    return _result && _result1;
   }
 
   /**
