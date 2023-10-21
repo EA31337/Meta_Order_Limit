@@ -1,6 +1,6 @@
 /**
  * @file
- * Implements Multi Currency meta strategy.
+ * Implements Order Limit meta strategy.
  */
 
 // Includes conditional compilation directives.
@@ -32,13 +32,13 @@ input ENUM_LOG_LEVEL Log_Level = V_INFO;  // Log level.
 input bool Info_On_Chart = true;          // Display info on chart.
 
 // Includes strategy class.
-#include "Stg_Meta_Multi_Currency.mqh"
+#include "Stg_Meta_Order_Limit.mqh"
 
 // Defines.
-#define ea_name "Strategy Meta Multi Currency"
+#define ea_name "Strategy Meta Order Limit"
 #define ea_version "2.000"
-#define ea_desc "Multi Currency meta strategy to trade with different strategies with the different currencies."
-#define ea_link "https://github.com/EA31337/Strategy-Meta_Multi_Currency"
+#define ea_desc "Order Limit meta strategy converts another strategy signals into pending orders."
+#define ea_link "https://github.com/EA31337/Strategy-Meta_Order_Limit"
 #define ea_author "EA31337 Ltd"
 
 // Properties.
@@ -64,7 +64,7 @@ int OnInit() {
   bool _result = true;
   EAParams ea_params(__FILE__, Log_Level);
   ea = new EA(ea_params);
-  _result &= ea.StrategyAdd<Stg_Meta_Multi_Currency>(Active_Tfs);
+  _result &= ea.StrategyAdd<Stg_Meta_Order_Limit>(Active_Tfs);
   return (_result ? INIT_SUCCEEDED : INIT_FAILED);
 }
 

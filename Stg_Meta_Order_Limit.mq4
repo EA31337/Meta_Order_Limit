@@ -6,8 +6,8 @@
 
 /**
  * @file
- * Implements Multi Currency meta strategy.
+ * Implements Order Limit meta strategy.
  */
 
 // Includes the main code.
-#include "Stg_Meta_Multi_Currency.mq5"
+#include "Stg_Meta_Order_Limit.mq5"
