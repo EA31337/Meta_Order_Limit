@@ -9,7 +9,7 @@
 
 // User input params.
 INPUT2_GROUP("Meta Order Limit strategy: main params");
-INPUT2 ENUM_STRATEGY Meta_Order_Limit_Strategy = STRAT_DEMARKER;  // Strategy for order limits
+INPUT2 ENUM_STRATEGY Meta_Order_Limit_Strategy = STRAT_RSI;  // Strategy for order limits
 INPUT3_GROUP("Meta Order Limit strategy: common params");
 INPUT3 float Meta_Order_Limit_LotSize = 0;                // Lot size
 INPUT3 int Meta_Order_Limit_SignalOpenMethod = 0;         // Signal open method
